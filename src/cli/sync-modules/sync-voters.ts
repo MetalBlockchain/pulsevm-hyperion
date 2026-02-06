@@ -1,7 +1,7 @@
-import { Name, UInt64 } from "@wharfkit/antelope";
 import { cargo } from "async";
 import { IVoter } from "../../interfaces/table-voter.js";
 import { Synchronizer } from "./synchronizer.js";
+import { Name, UInt64 } from "@metalblockchain/pulsevm-js";
 
 export class VoterSynchronizer extends Synchronizer<IVoter> {
 
@@ -13,10 +13,10 @@ export class VoterSynchronizer extends Synchronizer<IVoter> {
         let lb: UInt64 | undefined = undefined;
         let more = false;
         do {
-            const result = await this.client.v1.chain.get_table_rows({
-                code: "eosio",
+            const result = await this.client.getTableRows({
+                code: "pulse",
                 table: "voters",
-                scope: "eosio",
+                scope: "pulse",
                 limit: 300,
                 lower_bound: lb ? lb : undefined
             });
@@ -42,7 +42,7 @@ export class VoterSynchronizer extends Synchronizer<IVoter> {
     }
 
     public async run() {
-        const info = await this.client.v1.chain.get_info();
+        const info = await this.client.getInfo();
         this.currentBlock = info.head_block_num.toNumber();
 
         await this.setupMongo('voters', [

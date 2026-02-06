@@ -1,16 +1,16 @@
 import {Client} from "@elastic/elasticsearch";
-import {APIClient} from "@wharfkit/antelope";
 import {readFileSync} from "fs";
 import {Collection, MongoClient, Document as MongoDoc} from "mongodb";
 import {join} from "path";
 import {HyperionConnections} from "../../interfaces/hyperionConnections.js";
+import { PulseAPI } from "@metalblockchain/pulsevm-js";
 
 export abstract class Synchronizer<T extends MongoDoc> {
     protected chain: string;
     protected indexName: string;
     protected connections: HyperionConnections;
     protected elastic: Client;
-    protected client: APIClient;
+    protected client: PulseAPI;
     protected mongoClient?: MongoClient;
     protected collection?: Collection<T>;
     protected currentBlock: number = 0;
@@ -44,12 +44,12 @@ export abstract class Synchronizer<T extends MongoDoc> {
         });
     }
 
-    protected createAPIClient(): APIClient {
+    protected createAPIClient(): PulseAPI {
         const chainConfig = this.connections.chains[this.chain];
         if (!chainConfig) {
             throw new Error(`Chain ${this.chain} not found in connections.json`);
         }
-        return new APIClient({url: chainConfig.http});
+        return new PulseAPI(chainConfig.http);
     }
 
     protected async setupMongo(collectionName: string, indexConfigs: Array<{

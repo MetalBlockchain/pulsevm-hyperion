@@ -1,4 +1,4 @@
-import {ABI} from "@wharfkit/antelope";
+import { ABI } from "@metalblockchain/pulsevm-js";
 
 export interface HyperionAbi {
     valid_until: number | null;

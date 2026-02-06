@@ -10,10 +10,10 @@ import * as readline from 'readline';
 import * as amqp from 'amqplib';
 import { Redis } from 'ioredis';
 import { Client } from '@elastic/elasticsearch';
-import { APIClient } from '@wharfkit/antelope';
 import { StateHistorySocket } from '../indexer/connections/state-history.js';
 import { MongoClient } from 'mongodb';
 import { IndexerController } from './controller-client/controller.client.js';
+import { PulseAPI } from '@metalblockchain/pulsevm-js';
 
 interface ConnectionsInitOptions {
     amqpUser?: string;
@@ -336,8 +336,8 @@ async function newChain(shortName: string, options) {
 
         // test nodeos availability
         try {
-            const apiClient = new APIClient({ url: options.http, fetch });
-            const info = await apiClient.v1.chain.get_info();
+            const apiClient = new PulseAPI(options.http);
+            const info = await apiClient.getInfo();
             jsonData.api.chain_api = options.http;
             connections.chains[shortName].chain_id = info.chain_id.toString();
             connections.chains[shortName].http = options.http;
@@ -465,8 +465,8 @@ async function testChain(shortName: string) {
     console.log(`Checking HTTP endpoint: ${httpEndpoint}`);
     let httpChainId = '';
     try {
-        const apiClient = new APIClient({ url: httpEndpoint });
-        const info = await apiClient.v1.chain.get_info();
+        const apiClient = new PulseAPI(httpEndpoint);
+        const info = await apiClient.getInfo();
         httpChainId = info.chain_id.toString();
     } catch (e: any) {
         console.log(`Failed to connect to ${httpEndpoint} - ${e.message}`);

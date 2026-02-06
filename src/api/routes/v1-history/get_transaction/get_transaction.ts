@@ -1,6 +1,6 @@
 import {FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
 import {mergeActionMeta, timedQuery} from "../../../helpers/functions.js";
-import {API} from "@wharfkit/antelope";
+import { GetInfoResponse } from "@metalblockchain/pulsevm-js";
 
 
 async function getTransaction(fastify: FastifyInstance, request: FastifyRequest) {
@@ -44,13 +44,13 @@ async function getTransaction(fastify: FastifyInstance, request: FastifyRequest)
     let hits;
 
     // build get_info request with caching
-    const $getInfo = new Promise<API.v1.GetInfoResponse | null>(resolve => {
+    const $getInfo = new Promise<GetInfoResponse | null>(resolve => {
         const key = `${fastify.manager.chain}_get_info`;
         fastify.redis.get(key).then(value => {
             if (value) {
                 resolve(JSON.parse(value));
             } else {
-                fastify.antelope.chain.get_info().then(value1 => {
+                fastify.antelope.chain.getInfo().then(value1 => {
                     fastify.redis.set(key, JSON.stringify(value1), 'EX', 6);
                     resolve(value1);
                 }).catch((reason) => {

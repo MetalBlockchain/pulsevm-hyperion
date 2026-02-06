@@ -12,8 +12,8 @@ import {StateHistorySocket} from "../connections/state-history.js";
 import {BasicDelta} from "../../interfaces/hyperion-delta.js";
 import {getHeapStatistics, HeapInfo} from "node:v8";
 import {HyperionActionAct} from "../../interfaces/hyperion-action.js";
-import {APIClient} from "@wharfkit/antelope";
 import {HyperionAbi} from "../../interfaces/hyperion-abi.js";
+import { PulseAPI } from "@metalblockchain/pulsevm-js";
 
 export abstract class HyperionWorker {
 
@@ -27,7 +27,7 @@ export abstract class HyperionWorker {
     ch?: Channel;
     cch?: ConfirmChannel;
 
-    rpc: APIClient;
+    rpc: PulseAPI;
     client: Client;
     ship: StateHistorySocket;
 
@@ -246,7 +246,7 @@ export abstract class HyperionWorker {
 
     async getAbiFromHeadBlock(code: string): Promise<HyperionAbi | null> {
         try {
-            const result = await this.rpc.v1.chain.get_abi(code);
+            const result = await this.rpc.getABI(code);
             if (result && result.abi) {
                 return {
                     abi: result.abi,
@@ -315,10 +315,15 @@ export abstract class HyperionWorker {
             _status = false;
             debugLog('ignore current abi for', contract);
         } else {
-            const currentAbi = await this.rpc.v1.chain.get_raw_abi(contract);
+            const currentAbi = await this.rpc.getRawABI(contract);
             if (currentAbi.abi.array.byteLength > 0) {
                 const abi_hex = Buffer.from(currentAbi.abi.array).toString('hex');
-                _status = this.abieos.loadAbiHex(contract, abi_hex);
+                try {
+                    _status = this.abieos.loadAbiHex(contract, abi_hex);
+                } catch (e) {
+                    console.log(e)
+                    throw e;
+                }
                 if (!_status) {
                     hLog(`Abieos::loadAbiHex error for ${contract} at head`);
                     if (this.failedAbiMap.has(contract)) {

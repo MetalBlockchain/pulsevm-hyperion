@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
-import { APIClient, Asset, Name, UInt64 } from '@wharfkit/antelope';
 import { MongoClient, Db, IndexDescription } from 'mongodb';
 import { join } from 'node:path';
 import { cargo } from 'async';
 import { findAndValidatePrimaryKey } from '../utils/check-primary-key.js';
+import { Asset, Name, PulseAPI, UInt64 } from '@metalblockchain/pulsevm-js';
 
 interface ChainConfig {
     features: {
@@ -17,7 +17,7 @@ interface ChainConfig {
 export class ContractStateSynchronizer {
     private chain: string;
     private config: ChainConfig;
-    private client: APIClient;
+    private client: PulseAPI;
     private mongoClient: MongoClient;
     private db: Db | undefined;
     private currentBlock: number = 0;
@@ -51,13 +51,13 @@ export class ContractStateSynchronizer {
         return JSON.parse(readFileSync(join(configDir, 'connections.json'), 'utf-8'));
     }
 
-    private createAPIClient(): APIClient {
+    private createAPIClient(): PulseAPI {
         const connections = this.loadConnections();
         const endpoint = connections.chains[this.chain].http;
         if (!endpoint) {
             throw new Error('No HTTP Endpoint!');
         }
-        return new APIClient({ url: endpoint });
+        return new PulseAPI(endpoint);
     }
 
     private createMongoClient(): MongoClient {
@@ -99,7 +99,7 @@ export class ContractStateSynchronizer {
 
                     if (config.auto_index === true) {
                         console.log(`Auto-indexing enabled for ${collectionName}`);
-                        const contractAbi = await this.client.v1.chain.get_abi(contract);
+                        const contractAbi = await this.client.getABI(contract);
                         if (contractAbi && contractAbi.abi) {
                             const tables = contractAbi.abi.tables;
                             const structs = contractAbi.abi.structs;
@@ -160,7 +160,7 @@ export class ContractStateSynchronizer {
                     let lowerBound: string | null = null;
                     do {
                         try {
-                            const scopes = await this.client.v1.chain.get_table_by_scope({
+                            const scopes = await this.client.getTableByScope({
                                 code: contract,
                                 table: table,
                                 limit: 1000,
@@ -174,7 +174,7 @@ export class ContractStateSynchronizer {
                                 let more = false;
                                 const approvals: any[] = [];
                                 do {
-                                    const result = await this.client.v1.chain.get_table_rows({
+                                    const result = await this.client.getTableRows({
                                         code: contract,
                                         scope: scope,
                                         table: table,
@@ -251,7 +251,7 @@ export class ContractStateSynchronizer {
                 return;
             }
 
-            const info = await this.client.v1.chain.get_info();
+            const info = await this.client.getInfo();
             this.currentBlock = info.head_block_num.toNumber();
             this.currentBlockTime = info.head_block_time.toString();
             this.currentBlockId = info.head_block_id.toString();

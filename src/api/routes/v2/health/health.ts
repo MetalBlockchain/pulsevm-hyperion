@@ -124,7 +124,7 @@ async function checkRabbit(fastify: FastifyInstance): Promise<ServiceResponse<an
 async function checkNodeos(fastify: FastifyInstance): Promise<ServiceResponse<NodeosService>> {
     const tRefNodeos = process.hrtime.bigint();
     try {
-        const results = await fastify.antelope.chain.get_info();
+        const results = await fastify.antelope.chain.getInfo();
         if (results) {
             const diff = (new Date().getTime()) - (new Date(results.head_block_time.toString() + '+00:00').getTime());
             return createHealth(false, 'NodeosRPC', 'OK', {

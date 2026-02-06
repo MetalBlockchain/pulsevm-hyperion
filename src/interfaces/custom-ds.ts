@@ -1,4 +1,4 @@
-import {Asset, Struct} from "@wharfkit/antelope";
+import { Asset, Struct } from "@metalblockchain/pulsevm-js";
 
 @Struct.type("accounts")
 export class TokenAccount extends Struct {

@@ -1,6 +1,6 @@
-import { PrivateKey, PublicKey } from "@wharfkit/antelope";
 import { io, Socket as SocketIO } from "socket.io-client";
 import { hLog } from "../../indexer/helpers/common_functions.js";
+import { PrivateKey, PublicKey } from "@metalblockchain/pulsevm-js";
 
 export interface QRYPublisherOptions {
     hubUrl: string;

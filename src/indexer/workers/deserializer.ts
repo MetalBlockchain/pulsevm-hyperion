@@ -13,9 +13,9 @@ import { HyperionAbi } from "../../interfaces/hyperion-abi.js";
 import { TransactionTrace } from "../../interfaces/action-trace.js";
 import { HyperionSignedBlock, ProducerSchedule } from "../../interfaces/signed-block.js";
 import { estypes } from "@elastic/elasticsearch";
-import { ABI, Action, PackedTransaction, Serializer } from "@wharfkit/antelope";
 import { TokenAccount } from "../../interfaces/custom-ds.js";
 import { GetBlocksResultV0 } from "./state-reader.js";
+import { ABI, Action, PackedTransaction, Serializer } from "@metalblockchain/pulsevm-js";
 
 interface QueuePayload {
     queue: string;
@@ -289,6 +289,7 @@ export default class MainDSWorker extends HyperionWorker {
             let light_block: HyperionLightBlock | null = null;
             const block_num = res.this_block.block_num.toNumber();
             const block_id = res.this_block.block_id.toString().toLowerCase();
+            console.log(res)
             if (this.conf.indexer.fetch_block) {
                 if (!block) {
                     hLog('Block not found!');
@@ -298,7 +299,7 @@ export default class MainDSWorker extends HyperionWorker {
                     '@timestamp': block['timestamp'],
                     block_num: res.this_block.block_num.toNumber(),
                     block_id: res.this_block.block_id.toString().toLowerCase(),
-                    prev_id: res.prev_block.block_id.toString().toLowerCase(),
+                    prev_id: (res.prev_block) ? res.prev_block.block_id.toString().toLowerCase() : "0000000000000000000000000000000000000000000000000000000000000000",
                     producer: block.producer,
                     new_producers: block.new_producers,
                     schedule_version: block.schedule_version,
@@ -1381,7 +1382,7 @@ export default class MainDSWorker extends HyperionWorker {
                     hLog(`Failed to process ABI from ${account['name']} at ${block_num}: ${e.message}`);
                 }
             } else {
-                if (account.name === 'eosio') {
+                if (account.name === 'pulse') {
                     hLog(`---------- ${block_num} ----------------`);
                     hLog(account);
                 }
@@ -1771,7 +1772,7 @@ export default class MainDSWorker extends HyperionWorker {
 
     private async populateTableHandlers() {
 
-        const systemContract = this.conf.settings.system_contract ?? (this.conf.settings.eosio_alias ?? 'eosio');
+        const systemContract = this.conf.settings.system_contract ?? (this.conf.settings.eosio_alias ?? 'pulse');
 
         this.tableHandlers[systemContract + ':voters'] = (delta: HyperionDelta) => {
             delta['@voters'] = {};

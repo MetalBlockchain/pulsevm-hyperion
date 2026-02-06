@@ -1,8 +1,8 @@
-import {Name, Serializer} from "@wharfkit/antelope";
 import {cargo} from "async";
 import {Collection} from "mongodb";
 import {IAccount} from "../../interfaces/table-account.js";
 import {Synchronizer} from "./synchronizer.js";
+import { Name, Serializer } from "@metalblockchain/pulsevm-js";
 
 export class AccountSynchronizer extends Synchronizer<IAccount> {
     private accountCollection?: Collection<IAccount>;
@@ -29,10 +29,10 @@ export class AccountSynchronizer extends Synchronizer<IAccount> {
     }
 
     private async getAbiHashTable(lb?: any) {
-        const data = await this.client.v1.chain.get_table_rows({
+        const data = await this.client.getTableRows({
             table: 'abihash',
-            code: 'eosio',
-            scope: 'eosio',
+            code: 'pulse',
+            scope: 'pulse',
             limit: 100,
             lower_bound: lb
         });
@@ -58,7 +58,7 @@ export class AccountSynchronizer extends Synchronizer<IAccount> {
 
         for (const contract of this.contractAccounts) {
             try {
-                const abi = await this.client.v1.chain.get_abi(contract);
+                const abi = await this.client.getABI(contract);
                 const tables = new Set(abi.abi?.tables?.map(value => value.name));
                 if (tables.has("accounts") && tables.has("stat")) {
                     const actions = new Set(abi.abi?.actions?.map(value => value.name));
@@ -95,7 +95,7 @@ export class AccountSynchronizer extends Synchronizer<IAccount> {
             this.currentContract = contract;
             let lowerBound: string = '';
             do {
-                const scopes = await this.client.v1.chain.get_table_by_scope({
+                const scopes = await this.client.getTableByScope({
                     table: "accounts",
                     code: contract,
                     limit: 1000,
@@ -105,7 +105,7 @@ export class AccountSynchronizer extends Synchronizer<IAccount> {
                 for (const row of rows) {
                     try {
                         const account = row.scope.toString();
-                        const result = await this.client.v1.chain.get_currency_balance(contract, account);
+                        const result = await this.client.getCurrencyBalance(contract, account);
                         this.currentScope = account;
                         const balances = Serializer.objectify(result);
                         for (const balance of balances) {
@@ -134,7 +134,7 @@ export class AccountSynchronizer extends Synchronizer<IAccount> {
 
     public async run() {
         const tRef = Date.now();
-        const info = await this.client.v1.chain.get_info();
+        const info = await this.client.getInfo();
         this.currentBlock = info.head_block_num.toNumber();
         console.log(await this.elastic.ping());
         await this.getAbiHashTable();

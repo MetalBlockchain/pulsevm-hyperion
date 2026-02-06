@@ -17,7 +17,7 @@ import {getFirstIndexedBlock} from "../indexer/helpers/common_functions.js";
 
 
 import {WebSocket} from 'ws';
-import {APIClient} from "@wharfkit/antelope";
+import { PulseAPI } from '@metalblockchain/pulsevm-js';
 
 const progressBar = new cliProgress.SingleBar(
     {},
@@ -35,7 +35,7 @@ let missingBlocks: {
 
 async function run(
     client: Client,
-    apiClient: APIClient,
+    apiClient: PulseAPI,
     indexName: string,
     lastRequestedBlock: number,
     firstBlock: number,
@@ -91,7 +91,7 @@ async function run(
 
 }
 
-async function findForksOnRange(blocks: HyperionBlock[], rpc: APIClient) {
+async function findForksOnRange(blocks: HyperionBlock[], rpc: PulseAPI) {
     const removals: Set<string> = new Set();
     let start: number | null = null;
     let end: number | null = null;
@@ -131,14 +131,14 @@ async function findForksOnRange(blocks: HyperionBlock[], rpc: APIClient) {
         if (previousBlock && previousBlock.block_id !== currentBlock.prev_id) {
             if (start === null) {
                 start = currentBlockNumber - 1;
-                const blockData = await rpc.v1.chain.get_block_info(start);
+                const blockData = await rpc.getBlockInfo(start);
                 if (blockData && blockData.id.toString() !== previousBlock.block_id) {
                     removals.add(previousBlock.block_id);
                 }
             }
         } else {
             if (start) {
-                const blockData = await rpc.v1.chain.get_block_info(currentBlockNumber);
+                const blockData = await rpc.getBlockInfo(currentBlockNumber);
                 if (blockData) {
                     if (blockData.id.toString() !== currentBlock.block_id) {
                         removals.add(currentBlock.block_id);
@@ -188,7 +188,7 @@ async function scanChain(chain: string, args: any) {
     const chainConfig = readChainConfig(chain);
     const config = readConnectionConfig();
     const client = initESClient(config);
-    const apiClient = new APIClient({fetch, url: config.chains[chain].http});
+    const apiClient = new PulseAPI(config.chains[chain].http);
     const ping = await client.ping();
 
     if (!ping) {

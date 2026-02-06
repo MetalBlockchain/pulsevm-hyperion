@@ -1,6 +1,6 @@
 import {FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
 import {timedQuery} from "../../../helpers/functions.js";
-import {API} from "@wharfkit/antelope";
+import { AccountObject } from "@metalblockchain/pulsevm-js";
 
 async function getCreator(fastify: FastifyInstance, request: FastifyRequest) {
 
@@ -16,7 +16,7 @@ async function getCreator(fastify: FastifyInstance, request: FastifyRequest) {
 
     if (query.account === fastify.manager.config.settings.eosio_alias) {
         try {
-            const genesisBlock = await fastify.antelope.chain.get_block(1);
+            const genesisBlock = await fastify.antelope.chain.getBlock(1);
             if (genesisBlock) {
                 response.timestamp = genesisBlock.timestamp.toString();
             }
@@ -47,7 +47,7 @@ async function getCreator(fastify: FastifyInstance, request: FastifyRequest) {
         response.timestamp = result['@timestamp'];
         return response;
     } else {
-        let accountInfo: API.v1.AccountObject;
+        let accountInfo: AccountObject;
         try {
             accountInfo = await fastify.antelope.getAccountUntyped(query.account);
             console.log(accountInfo);
@@ -70,7 +70,7 @@ async function getCreator(fastify: FastifyInstance, request: FastifyRequest) {
                 console.log('hits', hits);
                 if (hits.length > 0 && hits[0]._source) {
                     const blockId = blockHeader.hits.hits[0]._source.block_id;
-                    const blockData = await fastify.antelope.chain.get_block(blockId);
+                    const blockData = await fastify.antelope.chain.getBlock(blockId);
                     response.block_num = blockData.block_num.toNumber();
                     for (const transaction of blockData.transactions) {
                         const actions = transaction.trx.transaction?.actions;

@@ -1,6 +1,5 @@
 import { Client, estypes } from '@elastic/elasticsearch';
 
-import { API, APIClient } from '@wharfkit/antelope';
 import { queue, QueueObject } from 'async';
 
 import cluster, { Worker } from 'cluster';
@@ -44,6 +43,7 @@ import { HyperionQueueMonitor } from './queueMonitor.js';
 
 import Timeout = NodeJS.Timeout;
 import { IPermission } from '../../interfaces/table-permissions.js';
+import { GetInfoResponse, PulseAPI } from '@metalblockchain/pulsevm-js';
 
 export class HyperionMaster {
     // global configuration
@@ -53,7 +53,7 @@ export class HyperionMaster {
     manager: ConnectionManager;
 
     // Antelope API Client
-    rpc: APIClient;
+    rpc: PulseAPI;
 
     // live producer schedule
     private currentSchedule: any;
@@ -68,7 +68,7 @@ export class HyperionMaster {
     chain: string;
 
     // Chain API Info
-    private chain_data?: API.v1.GetInfoResponse;
+    private chain_data?: GetInfoResponse;
 
     // Main workers
     workerMap: HyperionWorkerDef[] = [];
@@ -686,7 +686,7 @@ export class HyperionMaster {
 
     private async getCurrentSchedule() {
         try {
-            this.currentSchedule = await this.rpc.v1.chain.get_producer_schedule();
+            this.currentSchedule = await this.rpc.getProducerSchedule();
             if (!this.currentSchedule) {
                 console.error('empty producer schedule, something went wrong!');
                 process.exit(1);
@@ -838,7 +838,7 @@ export class HyperionMaster {
 
         // Fetch chain lib
         try {
-            this.chain_data = await this.rpc.v1.chain.get_info();
+            this.chain_data = await this.rpc.getInfo();
         } catch (e: any) {
             hLog('Failed to connect to chain api: ' + e.message);
             process.exit(1);
@@ -1526,7 +1526,7 @@ export class HyperionMaster {
         await waitUntilReady(
             async () => {
                 try {
-                    const info = await this.rpc.v1.chain.get_info();
+                    const info = await this.rpc.getInfo();
                     if (info.server_version_string) {
                         hLog(`Nodeos version: ${info.server_version_string}`);
                         rpcChainId = info.chain_id.toString();
@@ -1535,7 +1535,7 @@ export class HyperionMaster {
                         return false;
                     }
                 } catch (e: any) {
-                    hLog(`Chain API Error: ${e.message}`);
+                    hLog(`Chain API Error: ${e.message} ${this.manager.conn.chains[this.chain].http}`);
                     return false;
                 }
             },
@@ -2002,7 +2002,7 @@ export class HyperionMaster {
                             ];
                             const textFields = {};
                             if (contracts[code][table]['auto_index']) {
-                                const contractAbi = await this.rpc.v1.chain.get_abi(code);
+                                const contractAbi = await this.rpc.getABI(code);
                                 if (contractAbi && contractAbi.abi) {
                                     const tables = contractAbi.abi.tables;
                                     const structs = contractAbi.abi.structs;

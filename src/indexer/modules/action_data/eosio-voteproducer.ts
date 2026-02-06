@@ -1,6 +1,6 @@
 export const hyperionModule = {
     chain: "*",
-    contract: 'eosio',
+    contract: 'pulse',
     action: 'voteproducer',
     parser_version: ['3.2', '2.1','1.8', '1.7'],
     defineQueryPrefix: 'voteproducer',

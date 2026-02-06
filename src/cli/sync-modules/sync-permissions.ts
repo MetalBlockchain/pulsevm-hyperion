@@ -1,13 +1,13 @@
-import { Name, PublicKey } from "@wharfkit/antelope";
 import { cargo } from "async";
 import { Collection } from "mongodb";
 import { IPermission } from "../../interfaces/table-permissions.js";
 import { Synchronizer } from "./synchronizer.js";
+import { Name, PublicKey } from "@metalblockchain/pulsevm-js";
 
 export class PermissionsSynchronizer extends Synchronizer<IPermission> {
     private processedScopes: number = 0;
     private permissionsCollection?: Collection<IPermission>;
-    private systemTokenContract = 'eosio.token';
+    private systemTokenContract = 'pulse.token';
 
     constructor(chain: string) {
         super(chain, 'permissions');
@@ -30,7 +30,7 @@ export class PermissionsSynchronizer extends Synchronizer<IPermission> {
     private async *scan() {
         let lowerBound: string = '';
         do {
-            const scopes = await this.client.v1.chain.get_table_by_scope({
+            const scopes = await this.client.getTableByScope({
                 table: "accounts",
                 code: this.systemTokenContract,
                 limit: 1000,
@@ -47,7 +47,7 @@ export class PermissionsSynchronizer extends Synchronizer<IPermission> {
 
     public async run(): Promise<void> {
 
-        const info = await this.client.v1.chain.get_info();
+        const info = await this.client.getInfo();
         this.currentBlock = info.head_block_num.toNumber();
 
         await this.setupMongo();
@@ -83,8 +83,8 @@ export class PermissionsSynchronizer extends Synchronizer<IPermission> {
 
         for await (const accountName of this.scan()) {
             if (accountName) {
-                const info = await this.client.call({
-                    path: "/v1/chain/get_account",
+                const info = await this.client.callRpc({
+                    methodName: "pulsevm.getAccount",
                     params: {
                         account_name: accountName
                     }

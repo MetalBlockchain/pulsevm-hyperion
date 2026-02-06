@@ -3,8 +3,8 @@ import {StateHistorySocket} from "../../src/indexer/connections/state-history.js
 import {ConnectionManager} from "../../src/indexer/connections/manager.class.js";
 import {CacheManager} from "../../src/api/helpers/cacheManager.js";
 import {Client} from "@elastic/elasticsearch";
-import {AccountObject, ChainAPI} from "@wharfkit/antelope";
 import {SavedAbi} from "../../src/interfaces/hyperion-abi.js";
+import { PulseAPI } from "@metalblockchain/pulsevm-js";
 
 declare module 'fastify' {
     export interface FastifyInstance {
@@ -16,7 +16,7 @@ declare module 'fastify' {
         cacheManager: CacheManager;
         redis: FastifyRedis;
         antelope: {
-            chain: ChainAPI,
+            chain: PulseAPI,
             getHeadBlockNum: () => Promise<number | undefined>;
             getAbi: (account: string) => Promise<SavedAbi | undefined>;
             getAccountUntyped: (account: string) => Promise<any | undefined>;

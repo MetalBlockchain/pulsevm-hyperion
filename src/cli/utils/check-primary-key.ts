@@ -1,8 +1,8 @@
-import {ABI, APIClient, Asset, Name, UInt64} from '@wharfkit/antelope';
+import { ABI, Asset, Name, PulseAPI, UInt64 } from '@metalblockchain/pulsevm-js';
 import {createHash} from "node:crypto"
 
 
-export async function findAndValidatePrimaryKey(contractName: string, tableName: string, client: APIClient) {
+export async function findAndValidatePrimaryKey(contractName: string, tableName: string, client: PulseAPI) {
     console.log(`🔍 Attempting to find and validate PK for ${contractName}::${tableName}`);
 
     let abi: ABI;
@@ -11,7 +11,7 @@ export async function findAndValidatePrimaryKey(contractName: string, tableName:
     let candidateFields: any[] = [];
 
     try {
-        const abiResponse = await client.v1.chain.get_abi(contractName);
+        const abiResponse = await client.getABI(contractName);
         if (!abiResponse.abi) {
             console.error('❌ Could not fetch ABI.');
             return;
@@ -60,7 +60,7 @@ export async function findAndValidatePrimaryKey(contractName: string, tableName:
         const limitPerScopeCall = 1000;
         let lowerBoundScope: string = contractName;
         do {
-            const scopeResponse = await client.v1.chain.get_table_by_scope({
+            const scopeResponse = await client.getTableByScope({
                 code: contractName,
                 table: tableName,
                 limit: limitPerScopeCall,
@@ -101,7 +101,7 @@ export async function findAndValidatePrimaryKey(contractName: string, tableName:
     try {
         // Fetch Sample Row (remains the same)
         console.log(`\nFetching sample row from scope "${foundScope}"...`);
-        const sampleRowResponse = await client.v1.chain.get_table_rows({
+        const sampleRowResponse = await client.getTableRows({
             code: contractName,
             table: tableName,
             scope: foundScope,
@@ -154,7 +154,7 @@ export async function findAndValidatePrimaryKey(contractName: string, tableName:
             }
 
             try {
-                const validationResponse = await client.v1.chain.get_table_rows({
+                const validationResponse = await client.getTableRows({
                     code: contractName,
                     table: tableName,
                     scope: foundScope,

@@ -138,7 +138,7 @@ export class HyperionLifecycleManager {
             }
 
             // Get the current head block number
-            const chainInfo = await this.master.rpc.v1.chain.get_info();
+            const chainInfo = await this.master.rpc.getInfo();
 
             if (!chainInfo || !chainInfo.head_block_num) {
                 hLog(`Failed to get the last irreversible block number.`);

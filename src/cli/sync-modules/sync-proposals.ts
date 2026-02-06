@@ -1,9 +1,9 @@
-import {Name, PackedTransaction, Serializer, UInt64} from "@wharfkit/antelope";
 import {cargo} from "async";
 import {Collection} from "mongodb";
 import {IProposal} from "../../interfaces/table-proposal.js";
 
 import {Synchronizer} from "./synchronizer.js";
+import { Name, PackedTransaction, Serializer, UInt64 } from "@metalblockchain/pulsevm-js";
 
 export class ProposalSynchronizer extends Synchronizer<IProposal> {
     private proposalsCollection!: Collection<IProposal>;
@@ -30,8 +30,8 @@ export class ProposalSynchronizer extends Synchronizer<IProposal> {
         let more = false;
         const proposals: any[] = [];
         do {
-            const result = await this.client.v1.chain.get_table_rows({
-                code: "eosio.msig",
+            const result = await this.client.getTableRows({
+                code: "pulse.msig",
                 table: "proposal",
                 scope: scope,
                 limit: 10,
@@ -49,7 +49,7 @@ export class ProposalSynchronizer extends Synchronizer<IProposal> {
                     try {
                         let abi = this.abiCacheMap.get(action.account.toString());
                         if (!abi) {
-                            abi = await this.client.v1.chain.get_abi(action.account.toString());
+                            abi = await this.client.getABI(action.account.toString());
                             this.abiCacheMap.set(action.account.toString(), abi);
                         }
                         const decodedData = Serializer.objectify(action.decodeData(abi.abi));
@@ -70,8 +70,8 @@ export class ProposalSynchronizer extends Synchronizer<IProposal> {
         let more = false;
         const approvals: any[] = [];
         do {
-            const result = await this.client.v1.chain.get_table_rows({
-                code: "eosio.msig",
+            const result = await this.client.getTableRows({
+                code: "pulse.msig",
                 table: "approvals2",
                 scope: scope,
                 limit: 10,
@@ -87,8 +87,8 @@ export class ProposalSynchronizer extends Synchronizer<IProposal> {
     private async* scan() {
         let lb = '';
         do {
-            const result = await this.client.v1.chain.get_table_by_scope({
-                code: "eosio.msig",
+            const result = await this.client.getTableByScope({
+                code: "pulse.msig",
                 table: "proposal",
                 limit: 300,
                 lower_bound: Name.from(lb).value.toString()
@@ -124,7 +124,7 @@ export class ProposalSynchronizer extends Synchronizer<IProposal> {
     }
 
     public async run() {
-        const info = await this.client.v1.chain.get_info();
+        const info = await this.client.getInfo();
         this.currentBlock = info.head_block_num.toNumber();
 
         await this.setupMongo();

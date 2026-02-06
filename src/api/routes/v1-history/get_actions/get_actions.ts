@@ -4,9 +4,9 @@ import {hLog} from "../../../../indexer/helpers/common_functions.js";
 import {Abieos} from "@eosrio/node-abieos";
 import {terms} from "../../v2-history/get_actions/definitions.js";
 import {Client, estypes} from "@elastic/elasticsearch";
-import {ABI, Serializer} from "@wharfkit/antelope";
 import {SavedAbi} from "../../../../interfaces/hyperion-abi.js";
 import {ActionTrace} from "../../../../interfaces/action-trace.js";
+import { ABI, Serializer } from "@metalblockchain/pulsevm-js";
 
 const abieos = Abieos.getInstance();
 
@@ -271,7 +271,7 @@ async function getActions(fastify: FastifyInstance, request: FastifyRequest) {
     };
 
     const pResults = await Promise.all([
-        fastify.antelope.chain.get_info(),
+        fastify.antelope.chain.getInfo(),
         fastify.elastic.search<any>(esOpts)
     ]);
     const results = pResults[1];

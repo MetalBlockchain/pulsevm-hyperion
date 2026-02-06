@@ -10,8 +10,8 @@ import {RabbitQueueDef} from "../definitions/index-queues.js";
 import {ActionTrace} from "../../interfaces/action-trace.js";
 import {HyperionWorker} from "./hyperionWorker.js";
 import {HyperionActionAct} from "../../interfaces/hyperion-action.js";
-import {ABI, Action, Serializer} from "@wharfkit/antelope";
 import {HyperionAbi} from "../../interfaces/hyperion-abi.js";
+import { ABI, Action, Serializer } from "@metalblockchain/pulsevm-js";
 
 interface CustomAbiDef {
     abi: string;

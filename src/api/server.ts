@@ -293,7 +293,7 @@ class HyperionApiServer {
     await waitUntilReady(
       async () => {
         try {
-          const chain_data = await rpc.v1.chain.get_info();
+          const chain_data = await rpc.getInfo();
           if (chain_data && chain_data.chain_id) {
             this.pluginParams.chain_id = chain_data.chain_id;
             return true;

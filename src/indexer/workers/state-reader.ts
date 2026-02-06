@@ -1,11 +1,11 @@
 import WebSocket from 'ws';
 import {cargo, QueueObject} from 'async';
 import {Channel, ConfirmChannel} from 'amqplib';
-import {ABI, API, Bytes, Checksum256, Serializer, UInt32} from '@wharfkit/antelope';
 
 import {HyperionWorker} from './hyperionWorker.js';
 import {debugLog, hLog} from '../helpers/common_functions.js';
 import {RabbitQueueDef} from '../definitions/index-queues.js';
+import { ABI, Bytes, Checksum256, GetBlockResponse, Serializer, UInt32 } from '@metalblockchain/pulsevm-js';
 
 interface RequestRange {
     first_block: number;
@@ -540,9 +540,9 @@ export default class StateReader extends HyperionWorker {
         for (const [block_id, val] of forkedBlocks) {
             try {
                 // Confirm the block was actually forked using the chain api
-                let blockData: API.v1.GetBlockResponse | null = null;
+                let blockData: GetBlockResponse | null = null;
                 try {
-                    blockData = await this.rpc.v1.chain.get_block(block_id.toLowerCase());
+                    blockData = await this.rpc.getBlock(block_id.toLowerCase());
                     if (blockData) {
                         if (blockData.block_num.toNumber() === val.block_num) {
                             // console.log(`Block ${blockData.block_num.toNumber()} ${block_id} is still present on the chain, not forked.`);

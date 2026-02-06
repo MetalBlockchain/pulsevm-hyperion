@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { timedQuery } from "../../../helpers/functions.js";
 import { getSkipLimit } from "../../v2-history/get_actions/functions.js";
 import { IAccount } from "../../../../interfaces/table-account.js";
-import { Asset } from "@wharfkit/antelope";
+import { Asset } from "@metalblockchain/pulsevm-js";
 
 
 async function getTokens(fastify: FastifyInstance, request: FastifyRequest) {
@@ -60,7 +60,7 @@ async function getTokens(fastify: FastifyInstance, request: FastifyRequest) {
             precision = fastify.tokenCache.get(key).precision;
         } else {
             try {
-                token_data = await fastify.antelope.chain.get_currency_balance(data.code, query.account, data.symbol);
+                token_data = await fastify.antelope.chain.getCurrencyBalance(data.code, query.account, data.symbol);
                 if (token_data.length > 0) {
                     const amount = token_data[0].quantity;
                     const amount_arr = amount.split(".");
