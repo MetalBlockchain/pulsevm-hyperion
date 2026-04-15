@@ -300,7 +300,7 @@ export default class MainDSWorker extends HyperionWorker {
                     '@timestamp': block['timestamp'],
                     block_num: res.this_block.block_num.toNumber(),
                     block_id: res.this_block.block_id.toString().toLowerCase(),
-                    prev_id: res.prev_block.block_id.toString().toLowerCase(),
+                    prev_id: res.prev_block ? res.prev_block.block_id.toString().toLowerCase() : '0000000000000000000000000000000000000000000000000000000000000000',
                     producer: block.producer,
                     new_producers: block.new_producers,
                     schedule_version: block.schedule_version,
